@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,6 +35,7 @@ class TicTacToeScreen extends StatefulWidget {
 class _TicTacToeScreenState extends State<TicTacToeScreen> {
   List<String> board = List.filled(9, '');
   bool isPlayerTurn = true;
+  bool isAnimating = false;
   int _selectedIndex = 0;
 
   @override
@@ -81,6 +83,10 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              isPlayerTurn ? "Player's Turn (X)" : "Computer's Turn (O)",
+              style: const TextStyle(fontSize: 20, color: Colors.white),
+            ),
             SizedBox(
               width: 300,
               height: 300,
@@ -92,12 +98,15 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
-                      if (board[index] == '' && isPlayerTurn) {
+                      if (board[index] == '' && isPlayerTurn && !isAnimating) {
                         setState(() {
                           board[index] = 'X';
                           isPlayerTurn = false;
+                          isAnimating = true;
                           if (!checkGameOver()) {
-                            computerMove();
+                            Future.delayed(const Duration(seconds: 1), () {
+                              computerMove(); // Call computer move after 1 second delay
+                            });
                           }
                         });
                       }
@@ -246,6 +255,7 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
     setState(() {
       board = List.filled(9, '');
       isPlayerTurn = true;
+      isAnimating = false; // Reset the isAnimating flag
     });
   }
 
@@ -259,8 +269,11 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
     }
     var random = Random();
     var index = emptyCells[random.nextInt(emptyCells.length)];
-    board[index] = 'O';
-    isPlayerTurn = true;
+    setState(() {
+      board[index] = 'O';
+      isPlayerTurn = true;
+      isAnimating = false;
+    });
     checkGameOver();
   }
 
