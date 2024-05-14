@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
-import 'dart:async'; // Add this line to import the dart:async package for Timer
 import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const TicTacToeApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key});
+class TicTacToeApp extends StatelessWidget {
+  const TicTacToeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,154 +15,243 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Tic Tac Toe',
       theme: ThemeData(
-          primarySwatch: Colors.blue,
-          fontFamily: 'Poppins'
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Tic Tac Toe Home Page'),
+      home: const TicTacToeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+class TicTacToeScreen extends StatefulWidget {
+  const TicTacToeScreen({super.key});
 
-  final String title;
+  get userModel => null;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _TicTacToeScreenState createState() => _TicTacToeScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  List<String> _board = List.filled(9, '');
-  bool _isXTurn = true;
-  bool _gameOver = false;
-
-  List<int> _getAvailableMoves() {
-    List<int> moves = [];
-    for (int i = 0; i < _board.length; i++) {
-      if (_board[i] == '') {
-        moves.add(i);
-      }
-    }
-    return moves;
-  }
-
-  bool _checkWin(String player) {
-    List<List<int>> winningCombinations = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-
-    for (List<int> combination in winningCombinations) {
-      if (_board[combination[0]] == player &&
-          _board[combination[1]] == player &&
-          _board[combination[2]] == player) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void _handleTap(int index) {
-    if (_gameOver || _board[index] != '') {
-      return;
-    }
-
-    setState(() {
-      _board[index] = _isXTurn ? 'X' : 'O';
-      if (_checkWin(_board[index])) {
-        _gameOver = true;
-      } else if (_getAvailableMoves().isEmpty) {
-        _gameOver = true;
-      } else {
-        _isXTurn = !_isXTurn;
-      }
-
-      if (!_gameOver && !_isXTurn) {
-        Timer(const Duration(seconds: 1), () {
-          _computerMove();
-        });
-      }
-    });
-  }
-
-  void _computerMove() {
-    List<int> availableMoves = _getAvailableMoves();
-    int move = availableMoves[Random().nextInt(availableMoves.length)];
-    _handleTap(move);
-  }
-
-  void _resetGame() {
-    setState(() {
-      _board = List.filled(9, '');
-      _isXTurn = true;
-      _gameOver = false;
-    });
-  }
-
-  Widget _buildBoard() {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 1.0,
-        mainAxisSpacing: 10.0,
-        crossAxisSpacing: 10.0,
-      ),
-      itemCount: _board.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () => _handleTap(index),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
-            ),
-            child: Center(
-              child: Text(
-                _board[index],
-                style: const TextStyle(fontSize: 30.0),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+class _TicTacToeScreenState extends State<TicTacToeScreen> {
+  List<String> board = List.filled(9, '');
+  bool isPlayerTurn = true; // true for player, false for computer
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        titleTextStyle: const TextStyle(
+          color: Color(0xFFFF9000),
+          fontFamily: 'Poppins',
+          fontStyle: FontStyle.italic,
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+        ),
+        title: const Text('Tic Tac Toe'),
+        backgroundColor: const Color(0xFF000000),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildBoard(),
-            const SizedBox(height: 20.0),
-            if (_gameOver)
-              Text(
-                _checkWin('X')
-                    ? 'Player X wins!'
-                    : _checkWin('O')
-                    ? 'Player O wins!'
-                    : 'It\'s a draw!',
-                style: const TextStyle(fontSize: 20.0),
-              ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: _resetGame,
-              child: const Text('Reset Game'),
+      body: _selectedIndex == 0 ? buildGameBody() : aboutPageBuild(),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.gamepad),
+            label: 'Game',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'About Pratyush',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildGameBody() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF000000), Color(0xFF091e4f), Color(0xFF58a5e0), Color(0xFFffffff)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 300,
+          height: 300,
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
             ),
-          ],
+            itemCount: 9,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () {
+                  if (board[index] == '' && isPlayerTurn) {
+                    setState(() {
+                      board[index] = 'X';
+                      isPlayerTurn = false;
+                      if (!checkGameOver()) {
+                        computerMove();
+                      }
+                    });
+                  }
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      board[index],
+                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
+  }
+
+  Widget aboutPageBuild() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Hey Bugsmirror Team, \n'
+                'As you can see, this is a minimalistic TicTacToe app wherein we can compete with the Computer.',
+            style: TextStyle(fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+
+          const Text(
+            'Computer\'s moves are random as specified.',
+            style: TextStyle(fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 100),
+
+          const Text(
+            'Made By Pratyush Chowdhury',
+            style: TextStyle(fontSize: 20),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+
+          TextButton(
+            onPressed: _sendEmail,
+            child: const Text(
+              'Personal Email: pratyushchowdhury27@gmail.com',
+              style: TextStyle(fontSize: 18, color: Colors.blue),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  void _sendEmail(){
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'pratyushchowdhury27@gmail.com',
+    );
+    launchUrl(emailLaunchUri);
+  }
+
+  bool checkGameOver() {
+    // Check rows
+    for (int i = 0; i < 9; i += 3) {
+      if (board[i] != '' && board[i] == board[i + 1] && board[i] == board[i + 2]) {
+        showGameOverDialog(board[i]);
+        return true;
+      }
+    }
+    // Check columns
+    for (int i = 0; i < 3; i++) {
+      if (board[i] != '' && board[i] == board[i + 3] && board[i] == board[i + 6]) {
+        showGameOverDialog(board[i]);
+        return true;
+      }
+    }
+    // Check diagonals
+    if (board[0] != '' && board[0] == board[4] && board[0] == board[8]) {
+      showGameOverDialog(board[0]);
+      return true;
+    }
+    if (board[2] != '' && board[2] == board[4] && board[2] == board[6]) {
+      showGameOverDialog(board[2]);
+      return true;
+    }
+    // Check for draw
+    if (!board.contains('')) {
+      showGameOverDialog('Draw');
+      return true;
+    }
+    return false;
+  }
+
+  void showGameOverDialog(String winner) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Game Over'),
+          content: Text(winner == 'Draw' ? 'It\'s a draw!' : 'Winner: $winner'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                resetBoard();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Play Again'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void resetBoard() {
+    setState(() {
+      board = List.filled(9, '');
+      isPlayerTurn = true;
+    });
+  }
+
+  void computerMove() {
+    // Simple random move for computer
+    var emptyCells = [];
+    for (int i = 0; i < board.length; i++) {
+      if (board[i] == '') {
+        emptyCells.add(i);
+      }
+    }
+    var random = Random();
+    var index = emptyCells[random.nextInt(emptyCells.length)];
+    board[index] = 'O';
+    isPlayerTurn = true;
+    checkGameOver();
+  }
+
+  void _onNavItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }
