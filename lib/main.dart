@@ -153,50 +153,61 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
 
 
   Widget aboutPageBuild() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Hey Bugsmirror Team, \n'
-                'As you can see, this is a minimalistic TicTacToe app wherein we can compete with the Computer.',
-            style: TextStyle(fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-
-          const Text(
-            'Computer\'s moves are random as specified.',
-            style: TextStyle(fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 100),
-
-          const Text(
-            'Made By Pratyush Chowdhury',
-            style: TextStyle(fontSize: 20),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-
-          TextButton(
-            onPressed: _sendEmail,
-            child: const Text(
-              'Personal Email: pratyushchowdhury27@gmail.com',
-              style: TextStyle(fontSize: 18, color: Colors.blue),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF000000), Color(0xFF091e4f), Color(0xFF58a5e0), Color(0xFFffffff)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Hey Bugsmirror Team, \n'
+                  'This is a minimalistic TicTacToe app made from scratch \nwherein we can compete \nwith the computer.',
+              style: TextStyle(fontSize: 24, color: Colors.white, fontFamily: 'Georgia'),
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+
+            const Text(
+              'Computer\'s moves are random \nas specified. \nThank you for your consideration.',
+              style: TextStyle(fontSize: 24, color: Colors.white, fontFamily: 'Georgia'),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 100),
+
+            const Text(
+              'Made By Pratyush Chowdhury',
+              style: TextStyle(fontSize: 24, color: Colors.black, fontFamily: 'Georgia', fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+
+            TextButton(
+              onPressed: _sendEmail,
+              child: const Text(
+                'Personal Email: pratyushchowdhury27@gmail.com',
+                style: TextStyle(fontSize: 18, color: Colors.blue, fontFamily: 'Georgia', fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-  void _sendEmail(){
+
+  void _sendEmail() {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
       path: 'pratyushchowdhury27@gmail.com',
     );
     launchUrl(emailLaunchUri);
   }
+
 
   bool checkGameOver() {
     // Check rows
@@ -255,7 +266,7 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
     setState(() {
       board = List.filled(9, '');
       isPlayerTurn = true;
-      isAnimating = false; // Reset the isAnimating flag
+      isAnimating = false;
     });
   }
 
