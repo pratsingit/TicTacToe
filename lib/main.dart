@@ -33,7 +33,7 @@ class TicTacToeScreen extends StatefulWidget {
 
 class _TicTacToeScreenState extends State<TicTacToeScreen> {
   List<String> board = List.filled(9, '');
-  bool isPlayerTurn = true; // true for player, false for computer
+  bool isPlayerTurn = true;
   int _selectedIndex = 0;
 
   @override
@@ -78,55 +78,70 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
         ),
       ),
       child: Center(
-        child: SizedBox(
-          width: 300,
-          height: 300,
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-            ),
-            itemCount: 9,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  if (board[index] == '' && isPlayerTurn) {
-                    setState(() {
-                      board[index] = 'X';
-                      isPlayerTurn = false;
-                      if (!checkGameOver()) {
-                        computerMove();
-                      }
-                    });
-                  }
-                },
-                child: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      board[index],
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 300,
+              height: 300,
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
                 ),
-              );
-            },
-          ),
+                itemCount: 9,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      if (board[index] == '' && isPlayerTurn) {
+                        setState(() {
+                          board[index] = 'X';
+                          isPlayerTurn = false;
+                          if (!checkGameOver()) {
+                            computerMove();
+                          }
+                        });
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          board[index],
+                          style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: resetBoard,
+              child: const Text(
+                'Reset',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+
 
   Widget aboutPageBuild() {
     return Center(
